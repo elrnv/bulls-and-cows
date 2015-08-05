@@ -1,3 +1,22 @@
+/**
+ * bulls-and-cows Rust number guessing game
+ * https://github.com/elrnv/bulls-and-cows
+ *
+ * Copyright 2015 Egor Larionov
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 extern crate rand;
 extern crate num;
 
@@ -49,6 +68,16 @@ fn count_cows(guess: &[u8], target: &[u8]) -> usize {
     count_correct(guess,target) - count_bulls(guess,target)
 }
 
+// return true if digits in guess are unique
+fn is_unique_digits(guess: &[u8]) -> bool {
+    for i in 0..guess.len()-1 {
+        for j in i+1..guess.len() {
+            if guess[i] == guess[j] { return false; }
+        }
+    }
+    true
+}
+
 fn main() {
     let num_digits = 4usize;
 
@@ -59,7 +88,7 @@ fn main() {
 
     let target = gen_unique_rand_digits(num_digits);
 
-    println!("Enter your guesses below as a contiguous 4 digit number.");
+    println!("Enter your guesses below as a contiguous 4 digit number with non-repeating digits.");
 
     let mut moves = 1;
     'm: loop {
@@ -69,17 +98,19 @@ fn main() {
             .ok()
             .expect("Failed to read from standard input.");
 
-        let retry_message = || { println!("Please enter a {} digit number!", num_digits); };
+        let four_digit_msg = || { println!("Please enter a {} digit number!", num_digits); };
+        let unique_digit_msg = || { println!("Please enter {} unique digits!", num_digits); };
 
         let guess: u16 = match guess.trim().parse() {
             Ok(num) => num,
-            Err(_) => { retry_message(); continue; }, // catch error later
+            Err(_) => { four_digit_msg(); continue; }, // catch error later
         };
 
         let digits = num_to_digits(guess, num_digits);
         for d in digits.iter() {
-            if *d > 9u8 { retry_message(); continue 'm; }
+            if *d > 9u8 { four_digit_msg(); continue 'm; }
         }
+        if !is_unique_digits(&digits) { unique_digit_msg(); continue 'm; }
 
         let bulls = count_bulls(&digits, &target);
         let cows  = count_cows(&digits, &target);
