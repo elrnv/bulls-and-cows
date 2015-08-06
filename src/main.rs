@@ -23,6 +23,10 @@ extern crate num;
 use std::io;
 use rand::Rng;
 use num::pow;
+use std::env;
+
+mod tcp;
+use tcp::*;
 
 fn gen_unique_rand_digits(num: usize) -> Vec<u8> {
     assert!(num < 10);
@@ -78,7 +82,21 @@ fn is_unique_digits(guess: &[u8]) -> bool {
     true
 }
 
+// testing tcp connections
 fn main() {
+    let mut arg = "server".to_string();
+    if let Some(param) = env::args().nth(1) { arg = param; }
+
+    if arg == "server" {
+        println!("Starting server!");
+        start_server();
+    } else {
+        start_client();
+    }
+}
+
+
+fn main2() {
     let num_digits = 4usize;
 
     println!("Welcome to Bulls and Cows!");
